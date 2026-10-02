@@ -32,6 +32,89 @@
             --font: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
+        /* ---------- Light theme ---------- */
+        body.light {
+            --bg-0: #f4f5fb;
+            --bg-1: #ffffff;
+            --panel: #ffffff;
+            --panel-strong: #ffffff;
+            --panel-stronger: #fbfcff;
+            --panel-strongest: #eef0f8;
+            --panel-strong-2: #ffffff;
+            --panel-soft: #fbfcff;
+            --border: rgba(20, 24, 60, 0.12);
+            --text: #12142c;
+            --text-dim: #3d4159;
+            --text-faint: #71758f;
+            --text-faint-b: #8a8ea8;
+            --text-faint-c: #151832;
+            --text-faint-d: #71758f;
+            --text-faint-e: #71758f;
+            --text-faint-f: #71758f;
+            --text-faint-g: #71758f;
+            --text-faint-h: #71758f;
+            --text-faint-i: #71758f;
+            --text-faint-j: #71758f;
+            --text-faint-k: #71758f;
+            --text-faint-l: #71758f;
+            --text-faint-m: #71758f;
+            --text-faint-n: #71758f;
+            --text-faint-o: #71758f;
+            --text-faint-p: #71758f;
+            --text-faint-q: #71758f;
+            --text-faint-r: #71758f;
+            --text-faint-s: #71758f;
+            --text-faint-t: #71758f;
+            --text-faint-u: #71758f;
+            --text-faint-v: #71758f;
+            --text-faint-w: #71758f;
+            --text-faint-x: #71758f;
+            --shadow: 0 24px 60px rgba(35, 40, 90, 0.14);
+        }
+        body.light .ambient {
+            background:
+                radial-gradient(60% 50% at 15% 0%, rgba(109, 92, 255, 0.14), transparent 60%),
+                radial-gradient(50% 45% at 90% 10%, rgba(0, 170, 220, 0.12), transparent 60%),
+                radial-gradient(55% 55% at 60% 100%, rgba(109, 92, 255, 0.08), transparent 60%);
+        }
+        body.light .sidebar { background: rgba(255,255,255,0.9); }
+        body.light .chat-wrap { background: var(--panel); }
+        body.light .msg.user .bubble { color: #fff; }
+        body.light .bubble.error { color: var(--err); }
+        body.light .ai-card { background: var(--panel-stronger); }
+        body.light .part-head { color: var(--accent-2); }
+        body.light .composer { background: rgba(255,255,255,0.75); }
+        body.light .input-row { background: #fff; }
+        body.light .input-row textarea { color: var(--text); }
+        body.light ::-webkit-scrollbar-thumb { background: rgba(20,24,60,0.2) !important; }
+        body.light .chart-list-item:hover, body.light .chat-item:hover { background: var(--panel-strongest); }
+        body.light .kb-grid .kb-key { background: #fff; color: var(--text); }
+        body.light .provider-status { background: var(--panel-soft); }
+
+        /* ---------- Aurora / ambient animation ---------- */
+        @keyframes auroraShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .ambient::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg,
+                rgba(109,92,255,0.12), rgba(0,212,255,0.08),
+                rgba(255,122,89,0.06), rgba(109,92,255,0.12));
+            background-size: 300% 300%;
+            animation: auroraShift 18s ease infinite;
+        }
+        body:not(.light) .ambient::before { filter: brightness(1.4); }
+
+        /* Animated accent border glow on AI cards */
+        @keyframes cardGlow {
+            0%, 100% { box-shadow: 0 14px 34px rgba(0,0,0,0.28), 0 0 0 1px var(--border); }
+            50% { box-shadow: 0 14px 44px rgba(109,92,255,0.22), 0 0 0 1px rgba(109,92,255,0.35); }
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         html, body { height: 100%; }
@@ -619,7 +702,20 @@
         }
         .photo-preview.has-img { border-style: solid; border-color: rgba(46,230,168,0.4); }
         .photo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; animation: fadeUp .35s ease both; }
-        .photo-preview .ph { color: var(--text-faint); font-size: 0.8rem; text-align: center; padding: 16px; }
+        .photo-preview .ph { color: var(--text-faint); font-size: 0.8rem; text-align: center; padding: 16px; line-height: 1.6; }
+        .photo-preview .ph small { display: block; opacity: .7; font-size: 0.72rem; margin-top: 4px; }
+        /* Multi-thumb layout + drag & drop / paste affordances */
+        .photo-preview.has-img { flex-wrap: wrap; gap: 8px; padding: 8px; justify-content: flex-start; align-items: center; }
+        .thumb-cell { position: relative; width: 96px; height: 96px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #000; flex: none; animation: fadeUp .3s ease both; }
+        .thumb-cell img { width: 100%; height: 100%; object-fit: cover; }
+        .thumb-remove { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 7px; border: none; background: rgba(0,0,0,.65); color: #fff; font-size: 14px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+        .thumb-remove:hover { background: var(--err); }
+        .thumb-add { flex: none; min-width: 96px; height: 96px; border-radius: 10px; border: 1px dashed var(--border); display: grid; place-items: center; color: var(--text-faint); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 8px; text-align: center; transition: all .2s; background: transparent; font-family: var(--font); }
+        .thumb-add:hover { border-color: var(--accent-2); color: var(--text); }
+        .photo-preview.drag-over, .composer.drag-over .photo-preview, .composer.drag-over .input-row { border-color: var(--accent-2) !important; box-shadow: 0 0 0 2px rgba(0,212,255,.35), 0 8px 24px rgba(109,92,255,.25); }
+        .photo-preview.drag-over { background: rgba(109,92,255,.12); transform: scale(1.01); }
+        .composer.drag-over .input-row { background: rgba(109,92,255,.08); }
+        #messages.drag-over { outline: 2px dashed rgba(0,212,255,.5); outline-offset: -8px; }
         .photo-btns { display: flex; flex-direction: column; gap: 8px; justify-content: center; min-width: 120px; }
         .camera-box {
             background: #000;
@@ -813,7 +909,76 @@
             from { opacity: 0; transform: scale(.6); }
             to { opacity: 1; transform: scale(1); }
         }
-        @keyframes typingBounce {
+        --font: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Animations & micro-interactions (additive polish) */
+    .msg { animation: msgIn .32s cubic-bezier(.22,.9,.28,1) both; }
+    .ai-card, .bubble { position: relative; }
+    .btn-solid:active, .btn-ghost:active, .tool-chip:active { transform: scale(.96); }
+    .msg .bubble { transition: box-shadow .25s ease; }
+    .bubble.user:hover, .ai-card:hover { box-shadow: 0 16px 40px rgba(0,0,0,.45); }
+
+    /* Copy / retry action buttons on AI cards */
+    .ai-actions {
+        display: flex; align-items: center; gap: 6px;
+        padding: 4px 18px 14px;
+    }
+    .ai-actions .ac {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 5px 12px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--text-faint);
+        font-family: var(--font);
+        font-size: 0.72rem;
+        cursor: pointer;
+        transition: all .2s;
+    }
+    .ai-actions .ac:hover { color: var(--text); border-color: var(--accent-2); background: rgba(255,255,255,.04); }
+    .ai-actions .ac svg { width: 13px; height: 13px; fill: currentColor; }
+    .ai-actions .time-tag {
+        margin-left: auto;
+        font-size: 0.66rem;
+        color: var(--text-faint);
+        font-variant-numeric: tabular-nums;
+    }
+    .ai-actions .ac.done { color: var(--ok); border-color: rgba(46,230,168,.4); }
+
+    /* Retry shimmer on card while re-sending */
+    .ai-card.busy::after {
+        content: '';
+        position: absolute; inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(109,92,255,.10), transparent);
+        background-size: 200% 100%;
+        animation: cardScan 1.3s linear infinite;
+    }
+    @keyframes cardScan { to { background-position: -200% 0; } }
+
+    /* Widescreen composer polish */
+    @media (min-width: 992px) {
+        .composer-inner { position: relative; }
+        .composer-inner::before {
+            content: '';
+            position: absolute; inset: -1px;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(120deg, transparent, rgba(109,92,255,.35), rgba(0,212,255,.35), transparent);
+            background-size: 300% 300%;
+            animation: composerGlow 6s ease infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes composerGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+    }
+
+    @keyframes typingBounce {
             0%, 80%, 100% { transform: translateY(0); opacity: .3; }
             40% { transform: translateY(-4px); opacity: 1; }
         }
@@ -998,8 +1163,8 @@
                 </div>
 
                 <div class="photo-arena" id="photoArena">
-                    <div class="photo-preview" id="photoPreview">
-                        <div class="ph">No photo attached</div>
+                    <div class="photo-preview" id="photoPreview" title="Drag & drop an image here, or paste from clipboard (Ctrl+V)">
+                        <div class="ph">No photo attached<small>Drag &amp; drop, paste (Ctrl+V), or Upload image</small></div>
                     </div>
                     <div class="photo-btns">
                         <button class="btn-solid" onclick="document.getElementById('photoUpload').click()">Upload image</button>
@@ -1022,7 +1187,7 @@
                     </div>
                 </div>
 
-                <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="handleUpload(event)">
+                <input type="file" id="photoUpload" accept="image/*" multiple class="hidden" onchange="handleUpload(event)">
 
                 <div class="input-row">
                     <textarea id="mathInput" rows="1" placeholder="Type your math question… e.g. Solve 3x² + 2x - 8 = 0" oninput="autoGrow(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"></textarea>
@@ -1053,7 +1218,7 @@
 STRICT OUTPUT RULES:
 1. Answer EACH sub-question/part SEPARATELY. Separate every part with the exact line: ---PART---
 2. For each part start with "Question:" restating it, then "Steps:" with the step-by-step working, then a final "Answer:" line.
-3. If a part involves a function that can be graphed, output one Desmos-compatible equation per line between the exact tags [GRAPH] and [/GRAPH], placed INSIDE that part's block. Use these forms: y = x^2 (preferred), or r = $\\theta$ style only when polar.
+3. Only emit a [GRAPH] block — one Desmos-compatible equation per line between the exact tags [GRAPH] and [/GRAPH], placed INSIDE that part's block — ONLY when the graph genuinely helps: the user explicitly asks for a graph/sketch, or the answer depends on roots, x-intercepts, intersections of curves, vertex/asymptotes/shape, or coordinate geometry. Do NOT emit a graph for routine algebra (factoring, simplifying, solving by formula, arithmetic, limits, derivatives, ordinary word problems) even if a function is mentioned. Use these forms: y = x^2 (preferred), or r = $\\theta$ style only when polar.
 4. If the problem is a single question with no sub-parts, output a single block (no ---PART--- separators).
 5. Always respond in clear paragraphs. Use LaTeX like $x^2$, $\\sqrt{3}$ and $\\frac{a}{b}$ for math expressions.
 
@@ -1089,6 +1254,7 @@ y = x^2 - 5x + 6
         let state = {
             mode: 'text',
             image: null,
+            images: [],
             chatId: null,
             busy: false
         };
@@ -1157,7 +1323,7 @@ y = x^2 - 5x + 6
             $('chipPhoto').classList.toggle('active', mode === 'photo');
             $('photoArena').classList.toggle('active', mode === 'photo');
             $('modeHint').textContent = mode === 'photo'
-                ? 'Send a photo of the problem — each part is solved separately'
+                ? 'Drop, paste (Ctrl+V) or upload a photo — each part is solved separately'
                 : 'Type a math problem and press enter';
             closeSidebar();
         }
@@ -1514,23 +1680,188 @@ y = x^2 - 5x + 6
         let cameraStream = null;
 
         function handleUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                setPhoto(e.target.result);
-            };
-            reader.readAsDataURL(file);
+            handleFiles(event.target.files);
             event.target.value = '';
         }
 
+        // Shared entry-point for <input>, drag-and-drop and clipboard paste.
+        // Accepts FileList | File[] | DataTransferItemList
+        function handleFiles(fileList) {
+            const files = Array.from(fileList || []).filter(f => f && (f.type || '').startsWith('image/'));
+            const all = Array.from(fileList || []);
+            if (!files.length) {
+                if (all.length) toast('Only image files are supported', true);
+                return;
+            }
+            let pending = files.length;
+            const datas = new Array(files.length);
+            files.forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    datas[idx] = e.target.result;
+                    if (--pending === 0) {
+                        state.images = state.images || [];
+                        datas.forEach(d => { if (d) state.images.push(d); });
+                        state.image = state.images[0] || null;
+                        renderPhotos();
+                        $('clearPhotoBtn').style.display = '';
+                        setMode('photo');
+                    }
+                };
+                reader.onerror = () => {
+                    if (--pending === 0) {
+                        const ok = datas.filter(Boolean);
+                        if (ok.length) {
+                            state.images = state.images || [];
+                            ok.forEach(d => state.images.push(d));
+                            state.image = state.images[0] || null;
+                            renderPhotos();
+                            $('clearPhotoBtn').style.display = '';
+                            setMode('photo');
+                        } else {
+                            toast('Could not read image file', true);
+                        }
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            toast(files.length === 1 ? 'Photo attached' : files.length + ' photos attached');
+        }
+
+        function extractImageFilesFromDataTransfer(dt) {
+            if (!dt) return [];
+            // Prefer .files (covers most drag-drop cases)
+            if (dt.files && dt.files.length) return Array.from(dt.files);
+            // Fallback: items may hold image data even when files is empty
+            if (dt.items) {
+                const out = [];
+                for (const item of dt.items) {
+                    if (item.kind === 'file') {
+                        const f = item.getAsFile();
+                        if (f) out.push(f);
+                    }
+                }
+                if (out.length) return out;
+            }
+            return [];
+        }
+
         function setPhoto(dataUrl) {
+            state.images = [dataUrl];
             state.image = dataUrl;
-            const pv = $('photoPreview');
-            pv.classList.add('has-img');
-            pv.innerHTML = `<img src="${dataUrl}">`;
+            renderPhotos();
             $('clearPhotoBtn').style.display = '';
             setMode('photo');
+        }
+
+        function addPhoto(dataUrl) {
+            state.images = state.images || [];
+            state.images.push(dataUrl);
+            state.image = state.images[0];
+            renderPhotos();
+            $('clearPhotoBtn').style.display = '';
+            setMode('photo');
+        }
+
+        function removePhoto(index) {
+            state.images = state.images || [];
+            state.images.splice(index, 1);
+            state.image = state.images[0] || null;
+            if (!state.images.length) { clearPhoto(); return; }
+            renderPhotos();
+        }
+
+        function renderPhotos() {
+            const pv = $('photoPreview');
+            state.images = state.images || [];
+            state.image = state.images[0] || null;
+            if (!state.images.length) {
+                pv.classList.remove('has-img');
+                pv.innerHTML = `<div class="ph">No photo attached<small>Drag &amp; drop, paste (Ctrl+V), or Upload image</small></div>`;
+                $('clearPhotoBtn').style.display = 'none';
+                return;
+            }
+            pv.classList.add('has-img');
+            pv.innerHTML = state.images.map((d, i) =>
+                `<div class="thumb-cell"><img src="${d}" alt="Upload ${i + 1}"><button class="thumb-remove" title="Remove" onclick="event.stopPropagation();removePhoto(${i})">&times;</button></div>`
+            ).join('') +
+                `<button class="thumb-add" onclick="document.getElementById('photoUpload').click()" title="Add more">+ add</button>`;
+            $('clearPhotoBtn').style.display = '';
+        }
+
+        // ---- Drag & drop + copy/paste wiring (called once at init) ----
+        function setupImageDnDPaste() {
+            const preview = $('photoPreview');
+            const arena = $('photoArena');
+            const composer = document.querySelector('.composer');
+            const dropZones = [preview, arena, composer, messagesEl].filter(Boolean);
+            let dragDepth = 0;
+
+            const setDragUI = on => {
+                preview.classList.toggle('drag-over', on);
+                if (composer) composer.classList.toggle('drag-over', on);
+                messagesEl.classList.toggle('drag-over', on);
+            };
+
+            // Must preventDefault on dragenter/dragover or drop won't fire.
+            window.addEventListener('dragenter', e => {
+                if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) {
+                    e.preventDefault();
+                    dragDepth++;
+                    setDragUI(true);
+                }
+            });
+            window.addEventListener('dragover', e => {
+                if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'copy';
+                }
+            });
+            window.addEventListener('dragleave', e => {
+                if (dragDepth > 0) {
+                    dragDepth = Math.max(0, dragDepth - 1);
+                    if (dragDepth === 0) setDragUI(false);
+                }
+            });
+            window.addEventListener('drop', e => {
+                const files = e.dataTransfer ? extractImageFilesFromDataTransfer(e.dataTransfer) : [];
+                if (files.length) {
+                    e.preventDefault();
+                    dragDepth = 0;
+                    setDragUI(false);
+                    handleFiles(files);
+                } else if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) {
+                    // Dragged files but none were images
+                    e.preventDefault();
+                }
+                dragDepth = 0;
+                setDragUI(false);
+            });
+
+            // Extra safety: also bind directly on the visible drop zones so the
+            // preview highlights even for edge-case browsers.
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', e => {
+                    if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'copy';
+                        setDragUI(true);
+                    }
+                });
+            });
+
+            // Paste images from clipboard anywhere (textarea, chat, whole page).
+            // Works for screenshots (Win+Shift+S / PrintScreen) and copied files.
+            document.addEventListener('paste', e => {
+                const dt = e.clipboardData;
+                if (!dt) return;
+                const files = extractImageFilesFromDataTransfer(dt);
+                if (files.length) {
+                    e.preventDefault();
+                    handleFiles(files);
+                }
+            });
         }
 
         async function startCamera() {
@@ -1565,8 +1896,9 @@ y = x^2 - 5x + 6
 
         function clearPhoto() {
             state.image = null;
+            state.images = [];
             $('photoPreview').classList.remove('has-img');
-            $('photoPreview').innerHTML = `<div class="ph">No photo attached</div>`;
+            $('photoPreview').innerHTML = `<div class="ph">No photo attached<small>Drag &amp; drop, paste (Ctrl+V), or Upload image</small></div>`;
             $('clearPhotoBtn').style.display = 'none';
         }
 
@@ -1863,6 +2195,7 @@ y = x^2 - 5x + 6
         syncSidebarForScreen();
         initProviders();
         renderMessagesView();
+        setupImageDnDPaste();
         $('#mathInput').focus();
     </script>
 </body>
