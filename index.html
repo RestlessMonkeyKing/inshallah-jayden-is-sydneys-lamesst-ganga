@@ -1068,6 +1068,52 @@
             .part-markdown { font-size: 0.88rem; padding: 12px 12px; }
             .photo-btns .btn-solid, .photo-btns .btn-outline { flex: 1; }
         }
+
+        /* ============ Refined clean theme overrides (less-AI, studio look) ============ */
+        :root {
+            --accent-1: #3f4756;
+            --accent-2: #4f46e5;
+            --accent-grad: linear-gradient(135deg, #262b3a, #262b3a);
+            --shadow: 0 8px 24px rgba(0,0,0,0.22);
+        }
+        .ambient { opacity: .35; }
+        .ambient::before { animation: none; opacity: .35; }
+        .logo-badge { background: #1c2030; border: 1px solid var(--border); box-shadow: none; font-weight: 700; }
+        .logo-text p { letter-spacing: .02em; }
+        .bubble.user { background: #232838; box-shadow: none; border: 1px solid rgba(255,255,255,.08); }
+        .ai-card { box-shadow: 0 6px 20px rgba(0,0,0,.18); animation: fadeUp .25s ease both; }
+        .ai-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+        .ai-card.busy::after { display: none; }
+        .mode-card.active, .kb-tab.active, .tool-chip.active, .btn-solid, .send-btn { background: #262b3a; box-shadow: none; border: 1px solid rgba(255,255,255,.1); }
+        .btn-solid:hover, .send-btn:hover:not(:disabled) { box-shadow: 0 4px 14px rgba(0,0,0,.3); transform: none; }
+        .tool-chip.photo-chip.active { background: #262b3a; box-shadow: none; }
+        .composer-inner::before { display: none; }
+        .part-head { color: var(--text-dim); }
+        .part-head .pnum { background: #2e3548; }
+        .part-markdown strong { color: var(--text); }
+        .part-markdown .answer { background: rgba(46,230,168,.1); }
+        /* Study mode */
+        .study-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: rgba(0,0,0,.2); border: 1px solid var(--border); border-radius: 12px; padding: 4px; }
+        .study-toggle button { border: none; background: transparent; color: var(--text-dim); font-family: var(--font); font-size: .78rem; font-weight: 600; padding: 9px 6px; border-radius: 9px; cursor: pointer; transition: all .18s; }
+        .study-toggle button.active { background: #eef0ff; color: #23264a; }
+        body:not(.light) .study-toggle button.active { background: #e8eaf2; color: #161a2b; }
+        .study-banner { display: flex; align-items: center; gap: 8px; font-size: .75rem; color: var(--text-dim); background: rgba(79,70,229,.1); border: 1px solid rgba(79,70,229,.3); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; }
+        .study-banner.hidden { display: none; }
+        .part.study-step { border-left: 3px solid var(--accent-2); }
+        .try-box { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(79,70,229,.08); border: 1px dashed rgba(79,70,229,.4); font-size: .85rem; }
+        /* Graph studio */
+        .mode-cards.three { grid-template-columns: 1fr 1fr 1fr; }
+        .graph-arena { max-height: 0; opacity: 0; overflow: hidden; margin-bottom: 0; transform: translateY(-6px); transition: max-height .4s cubic-bezier(.2,.8,.2,1), opacity .3s, margin .3s; border: 1px solid transparent; border-radius: 14px; }
+        .graph-arena.active { max-height: 560px; opacity: 1; margin-bottom: 10px; transform: none; border-color: var(--border); background: rgba(0,0,0,.22); }
+        .graph-toolbar { display: flex; gap: 8px; padding: 10px; flex-wrap: wrap; align-items: center; }
+        .graph-toolbar input { flex: 1 1 160px; background: rgba(255,255,255,.06); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--font); font-size: .85rem; padding: 10px 12px; outline: none; min-width: 0; }
+        .graph-toolbar input:focus { border-color: var(--accent-2); }
+        .graph-toolbar input::placeholder { color: var(--text-faint); }
+        #desmosStudio { width: 100%; height: 340px; background: #fff; border-radius: 0 0 13px 13px; overflow: hidden; }
+        .graph-examples { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 10px 10px; }
+        .graph-examples button { font-family: var(--font); font-size: .72rem; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; }
+        .graph-examples button:hover { color: var(--text); border-color: var(--accent-2); }
+        @media (max-width: 480px) { .mode-cards.three { grid-template-columns: 1fr 1fr 1fr; } .mode-cards.three .sd { display: none; } #desmosStudio { height: 280px; } }
     </style>
 </head>
 <body>
@@ -1080,10 +1126,10 @@
                 <svg viewBox="0 0 24 24"><path d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12 5.7 16.89a1 1 0 1 0 1.41 1.42L12 13.41l4.89 4.89a1 1 0 0 0 1.42-1.42L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4z"/></svg>
             </button>
             <div class="logo">
-                <div class="logo-badge">M</div>
+                <div class="logo-badge">∑</div>
                 <div class="logo-text">
-                    <h2>Math AI</h2>
-                    <p>AI-powered problem solver</p>
+                    <h2>Math Study</h2>
+                    <p>Learn · Practice · Graph</p>
                 </div>
             </div>
 
@@ -1098,19 +1144,33 @@
             </div>
 
             <div>
+                <div class="section-label" style="margin-bottom:8px;">Learning mode</div>
+                <div class="study-toggle" id="studyToggle">
+                    <button id="studyOffBtn" class="active" onclick="setStudy(false)">Solve</button>
+                    <button id="studyOnBtn" onclick="setStudy(true)">Study — not answer</button>
+                </div>
+                <p style="font-size:.7rem;color:var(--text-faint);margin-top:6px;line-height:1.5;">Study mode guides you with hints &amp; questions instead of giving the answer.</p>
+            </div>
+
+            <div>
                 <div class="section-label" style="margin-bottom:8px;">Input Mode</div>
-                <div class="mode-cards">
+                <div class="mode-cards three">
                     <button class="mode-card active" id="modeText" onclick="setMode('text')">
                         <span class="ic">&#8594;</span>
                         <span class="tt">Text</span>
-                        <span class="sd">Type a problem</span>
+                        <span class="sd">Type it</span>
                     </button>
                     <button class="mode-card" id="modePhoto" onclick="setMode('photo')">
                         <span class="ic">
                             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin:0 auto;display:block;"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                         </span>
                         <span class="tt">Photo</span>
-                        <span class="sd">Upload or capture</span>
+                        <span class="sd">Snap it</span>
+                    </button>
+                    <button class="mode-card" id="modeGraph" onclick="setMode('graph')">
+                        <span class="ic">⌁</span>
+                        <span class="tt">Graph</span>
+                        <span class="sd">Plot it</span>
                     </button>
                 </div>
             </div>
@@ -1146,7 +1206,7 @@
                     <svg viewBox="0 0 24 24"><path d="M3 5h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2zm18 14H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2zm-18-8h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2z"/></svg>
                 </div>
                 <div class="head-title">
-                    <span>Mathematics Assistant</span>
+                    <span>Mathematics Studio</span>
                     <span class="live">&#9679; Live</span>
                 </div>
                 <span class="ctx-pill" id="ctxPill">New conversation</span>
@@ -1156,11 +1216,14 @@
 
             <div class="composer">
                 <div class="composer-toolbar">
-                    <button class="tool-chip" id="chipText" onclick="setMode('text')"><span class="chip-dot"></span>Text mode</button>
-                    <button class="tool-chip photo-chip" id="chipPhoto" onclick="setMode('photo')"><span class="chip-dot"></span>Photo mode</button>
+                    <button class="tool-chip" id="chipText" onclick="setMode('text')"><span class="chip-dot"></span>Text</button>
+                    <button class="tool-chip photo-chip" id="chipPhoto" onclick="setMode('photo')"><span class="chip-dot"></span>Photo</button>
+                    <button class="tool-chip" id="chipGraph" onclick="setMode('graph')"><span class="chip-dot"></span>Graph</button>
+                    <button class="tool-chip" id="chipStudy" onclick="toggleStudy()"><span class="chip-dot"></span>Study mode</button>
                     <span style="flex:1;"></span>
                     <span class="hint" id="modeHint" style="margin:0;">Type a math problem and press enter</span>
                 </div>
+                <div class="study-banner hidden" id="studyBanner">Study mode is on — I'll guide you step by step without giving the final answer away. Try answering each prompt.</div>
 
                 <div class="photo-arena" id="photoArena">
                     <div class="photo-preview" id="photoPreview" title="Drag & drop an image here, or paste from clipboard (Ctrl+V)">
@@ -1171,6 +1234,23 @@
                         <button class="btn-outline" onclick="startCamera()">Open camera</button>
                         <button class="btn-ghost" id="clearPhotoBtn" onclick="clearPhoto()" style="display:none;">Remove</button>
                     </div>
+                </div>
+
+                <div class="graph-arena" id="graphArena">
+                    <div class="graph-toolbar">
+                        <input id="graphInput" placeholder="y = x^2 — Enter to plot (comma separates multiple)" onkeydown="if(event.key==='Enter'){event.preventDefault();plotStudio();}">
+                        <button class="btn-solid" onclick="plotStudio()">Plot</button>
+                        <button class="btn-outline" onclick="clearStudio()">Clear</button>
+                    </div>
+                    <div class="graph-examples">
+                        <button onclick="studioExample('y = x^2')">x²</button>
+                        <button onclick="studioExample('y = sin(x)')">sin</button>
+                        <button onclick="studioExample('y = cos(x)')">cos</button>
+                        <button onclick="studioExample('y = 2*x + 1')">line</button>
+                        <button onclick="studioExample('y = x^2 - 5*x + 6')">quadratic</button>
+                        <button onclick="studioExample('r = theta')">polar</button>
+                    </div>
+                    <div id="desmosStudio"></div>
                 </div>
 
                 <div class="math-keyboard" id="mathKeyboard">
@@ -1213,7 +1293,7 @@
         const OPENROUTER_API_KEY = window.__OPENROUTER_API_KEY__ || '';
         const GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-2.5-flash-lite', 'gemini-2.0-flash-lite'];
 
-        const SYSTEM_PROMPT = `You are Math AI, an expert mathematics tutor. Solve the user's problem completely and correctly.
+        const SYSTEM_PROMPT = `You are Math Study, a clear mathematics tutor. Solve the user's problem completely and correctly.
 
 STRICT OUTPUT RULES:
 1. Answer EACH sub-question/part SEPARATELY. Separate every part with the exact line: ---PART---
@@ -1241,6 +1321,21 @@ Answer: x = 2 or x = 3
 y = x^2 - 5x + 6
 [/GRAPH]`;
 
+        const STUDY_PROMPT = `You are Math Study in STUDY MODE — a Socratic tutor. NEVER give the final answer directly, even if asked. Guide the student to discover it.
+
+STRICT OUTPUT RULES:
+1. Handle ONE small step at a time. Separate steps with the exact line: ---PART---
+2. For each block use this exact structure:
+Question: restate what this step is about in one line.
+Steps: explain the concept for THIS step only (2-4 short sentences, LaTeX like $x^2$ where needed). Give a worked mini-example on different numbers if helpful, never the user's actual numbers solved fully.
+Try: one concrete question or tiny task for the student to do next (e.g. "Try: what two numbers multiply to 6 and add to -5?").
+3. Do NOT include an "Answer:" line with the final result. End the last block with "Check: reply with your attempt and I'll check it." instead.
+4. If the user sends a correct attempt, confirm briefly and move to the next step. If wrong, give a hint, not the correction.
+5. Only emit a [GRAPH] block when a visual genuinely helps intuition (intercepts, shape, intersections). One Desmos equation per line between [GRAPH] and [/GRAPH].
+6. Keep tone calm, concise, classroom-like. No hype, no emojis.`;
+
+        function getSystemPrompt() { return state.study ? STUDY_PROMPT : SYSTEM_PROMPT; }
+
         const OR_FALLBACK = {
             gemma: ['google/gemma-2-9b-it:free', 'google/gemma-3-27b-it:free'],
             minimax: ['minimax/minimax-m1-80k', 'minimax/MiniMax-M1-80k'],
@@ -1256,7 +1351,9 @@ y = x^2 - 5x + 6
             image: null,
             images: [],
             chatId: null,
-            busy: false
+            busy: false,
+            study: false,
+            studio: null
         };
         const OR_MODELS = { gemma: [], minimax: [], gemini: [], auto: [] };
 
@@ -1319,13 +1416,94 @@ y = x^2 - 5x + 6
             state.mode = mode;
             $('modeText').classList.toggle('active', mode === 'text');
             $('modePhoto').classList.toggle('active', mode === 'photo');
+            if ($('modeGraph')) $('modeGraph').classList.toggle('active', mode === 'graph');
             $('chipText').classList.toggle('active', mode === 'text');
             $('chipPhoto').classList.toggle('active', mode === 'photo');
+            if ($('chipGraph')) $('chipGraph').classList.toggle('active', mode === 'graph');
             $('photoArena').classList.toggle('active', mode === 'photo');
+            const ga = $('graphArena');
+            if (ga) {
+                ga.classList.toggle('active', mode === 'graph');
+                if (mode === 'graph') setTimeout(initStudio, 60);
+            }
+            if (mode === 'photo') stopStudioAutoDims();
             $('modeHint').textContent = mode === 'photo'
-                ? 'Drop, paste (Ctrl+V) or upload a photo — each part is solved separately'
-                : 'Type a math problem and press enter';
+                ? 'Drop, paste (Ctrl+V) or upload a photo — auto-closes on send'
+                : mode === 'graph'
+                ? 'Plot functions below, or type a question to solve + graph it'
+                : (state.study ? 'Study mode: ask, then attempt each guided step' : 'Type a math problem and press enter');
             closeSidebar();
+            if (mode === 'graph') setTimeout(() => $('graphInput') && $('graphInput').focus(), 120);
+        }
+
+        function setStudy(on) {
+            state.study = !!on;
+            $('studyOnBtn').classList.toggle('active', state.study);
+            $('studyOffBtn').classList.toggle('active', !state.study);
+            if ($('chipStudy')) $('chipStudy').classList.toggle('active', state.study);
+            $('studyBanner').classList.toggle('hidden', !state.study);
+            if (state.mode === 'text') {
+                $('modeHint').textContent = state.study
+                    ? 'Study mode: ask, then attempt each guided step'
+                    : 'Type a math problem and press enter';
+            }
+            if (on) toast('Study mode on — I will guide, not give answers');
+        }
+        function toggleStudy() { setStudy(!state.study); }
+
+        // ======================= GRAPH STUDIO (Desmos-like) =======================
+        function stopStudioAutoDims() { /* keep studio calc alive across modes */ }
+        function initStudio() {
+            const el = $('desmosStudio');
+            if (!el || typeof Desmos === 'undefined') return;
+            if (state.studio) { try { state.studio.resize(); } catch (e) {} return; }
+            try {
+                state.studio = Desmos.GraphingCalculator(el, {
+                    expressionsTopbar: true,
+                    settingsMenu: true,
+                    zoomButtons: true,
+                    expressionsCollapsed: false,
+                    border: false
+                });
+                state.studio.setExpression({ id: 'studio-1', latex: 'y=x^2' });
+            } catch (e) { /* Desmos failed — inline graphs still work */ }
+        }
+        function studioExample(eq) {
+            const inp = $('graphInput');
+            if (inp) { inp.value = eq; inp.focus(); }
+            plotStudio(eq);
+            setMode('graph');
+        }
+        function plotStudio(preset) {
+            initStudio();
+            const raw = (preset || ($('graphInput') ? $('graphInput').value : '')).trim();
+            if (!raw) { toast('Type a function, e.g. y = x^2', true); return; }
+            // Split on comma/semicolon/newline so "y=x^2, y=2x+1" plots both
+            const eqs = raw.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+            if (!state.studio) { toast('Graph engine still loading…', true); return; }
+            try {
+                // Clear previous studio expressions, keep grid/settings
+                const ids = state.studio.getExpressions().map(e => e.id).filter(id => String(id).startsWith('studio-'));
+                ids.forEach(id => state.studio.removeExpression({ id }));
+            } catch (e) {}
+            const colors = ['#4f46e5', '#0ea5e9', '#16a34a', '#dc2626', '#ea580c', '#7c3aed'];
+            eqs.forEach((rawEq, i) => {
+                let eq = rawEq.replace(/^equation\d+\s*:\s*/i, '');
+                try {
+                    state.studio.setExpression({
+                        id: 'studio-' + Date.now() + '-' + i,
+                        latex: eq,
+                        color: colors[i % colors.length]
+                    });
+                } catch (e) { toast('Could not plot: ' + eq, true); }
+            });
+        }
+        function clearStudio() {
+            if ($('graphInput')) $('graphInput').value = '';
+            if (!state.studio) return;
+            try {
+                state.studio.getExpressions().forEach(e => { try { state.studio.removeExpression({ id: e.id }); } catch (x) {} });
+            } catch (e) {}
         }
 
         // ======================= SIDEBAR (collapsible) =======================
@@ -1516,14 +1694,14 @@ y = x^2 - 5x + 6
         function welcomeScreen() {
             messagesEl.innerHTML = `
                 <div class="welcome">
-                    <div class="hero-ic">M</div>
-                    <h3>How can I help you today?</h3>
-                    <p>Ask any math question in text, or switch to photo mode and snap a picture of your worksheet. Every sub-question is answered separately with graphs when needed.</p>
+                    <div class="hero-ic">∑</div>
+                    <h3>What are we studying today?</h3>
+                    <p>Type a question, snap a worksheet photo, or open the Graph studio. Turn on <b>Study mode</b> if you want guidance without the answer given away.</p>
                     <div class="chips">
                         <button class="chip" onclick="q('Solve 2x + 5 = 15')">Solve 2x + 5 = 15</button>
                         <button class="chip" onclick="q('Quadratic: x² - 5x + 6')">Factor x² − 5x + 6</button>
-                        <button class="chip" onclick="q('Derivative of x³ + 2x²')">Derivative of x³ + 2x²</button>
-                        <button class="chip" onclick='q("Plot y = sin(x) and y = cos(x)")'>Graph sin(x) & cos(x)</button>
+                        <button class="chip" onclick="setStudy(true)">Try Study mode</button>
+                        <button class="chip" onclick="setMode('graph')">Open Graph studio</button>
                     </div>
                 </div>`;
         }
@@ -1560,10 +1738,11 @@ y = x^2 - 5x + 6
         function aiMsg(html, provider) {
             const m = document.createElement('div');
             m.className = 'msg assistant';
+            const label = state.study ? 'Guided study' : 'Solution';
             m.innerHTML = `
                 <div class="ai-card">
                     <div class="ai-head">
-                        <span>Math AI Solution</span>
+                        <span>${label}${state.study ? ' · answer hidden' : ''}</span>
                         <span class="provider-tag">${provider}</span>
                     </div>
                     <div class="ai-body">${html}</div>
@@ -1604,19 +1783,23 @@ y = x^2 - 5x + 6
         function renderResults(text, provider) {
             const blocks = parseResponse(text);
             const aiBody = [];
+            const isStudy = !!state.study;
 
             blocks.forEach((block, i) => {
                 let md = block.markdown;
 
-                const answerM = md.match(/Answer\s*:\s*([\s\S]*)$/i);
-                if (answerM) {
+                if (!isStudy) {
                     md = md.replace(/Answer\s*:\s*([\s\S]*)$/i, 'Answer: $1');
+                    // Highlight Answer line
+                    md = md.replace(/^Answer\s*:\s*(.+)$/gm, 'Answer: **$1**');
+                } else {
+                    // Turn "Try:" / "Check:" lines into a visible practice box
+                    md = md.replace(/^(Try\s*:.*)$/gim, '\n<div class="try-box">$1</div>\n');
+                    md = md.replace(/^(Check\s*:.*)$/gim, '\n<div class="try-box">$1</div>\n');
                 }
 
-                // Highlight Answer line
-                md = md.replace(/^Answer\s*:\s*(.+)$/gm, 'Answer: **$1**');
-
-                let partHtml = `<div class="part-head"><span class="pnum">${String.fromCharCode(65 + i)}</span>Part ${i + 1}</div>`;
+                const headLabel = isStudy ? `Step ${i + 1}` : `Part ${i + 1}`;
+                let partHtml = `<div class="part-head"><span class="pnum">${String.fromCharCode(65 + i)}</span>${headLabel}</div>`;
                 partHtml += `<div class="part-markdown">${marked.parse(md)}</div>`;
 
                 block.graphs.forEach((g, gi) => {
@@ -1629,7 +1812,7 @@ y = x^2 - 5x + 6
                     setTimeout(() => initGraph(graphId, g), 80);
                 });
 
-                aiBody.push(`<div class="part" style="animation-delay:${i * 90}ms">${partHtml}</div>`);
+                aiBody.push(`<div class="part${state.study ? ' study-step' : ''}" style="animation-delay:${i * 60}ms">${partHtml}</div>`);
             });
 
             const msg = aiMsg(aiBody.join(''), provider);
@@ -1935,7 +2118,7 @@ y = x^2 - 5x + 6
                             'x-goog-api-key': GEMINI_API_KEY
                         },
                         body: JSON.stringify({
-                            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                            system_instruction: { parts: [{ text: getSystemPrompt() }] },
                             contents,
                             generationConfig: { temperature: 0.6, maxOutputTokens: 4096 }
                         })
@@ -1973,7 +2156,7 @@ y = x^2 - 5x + 6
         async function callOpenRouter(userText, img, category) {
             const models = orModelFor(category);
             const baseMessages = [
-                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'system', content: getSystemPrompt() },
                 ...getContext().map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }))
             ];
 
@@ -2048,14 +2231,14 @@ y = x^2 - 5x + 6
                 : (selected === 'gemini' ? callGemini(text, img) : callOpenRouter(text, img, selected.replace('or-', '')));
 
             userMsg(displayText, state.image);
+            const wasStudy = state.study;
+            // Auto-close image upload after submit: clear + collapse back to text
+            input.value = '';
+            autoGrow(input);
             if (img) {
-                input.value = '';
-                autoGrow(input);
+                stopCamera();
                 clearPhoto();
-                if (isMobile()) setMode('text');
-            } else {
-                input.value = '';
-                autoGrow(input);
+                setMode('text');
             }
 
             state.busy = true;
@@ -2068,13 +2251,17 @@ y = x^2 - 5x + 6
             try {
                 const { text: reply, provider } = await promise;
                 th.remove();
-                chat.messages.push({ role: 'ai', text: reply, provider });
+                chat.messages.push({ role: 'ai', text: reply, provider, study: wasStudy });
                 chat.messages = chat.messages.slice(-40);
                 chat.updated = Date.now();
                 saveChats();
                 renderChatList();
-                $('ctxPill').textContent = `${chat.messages.filter(m => m.role === 'ai').length} answers`;
+                const n = chat.messages.filter(m => m.role === 'ai').length;
+                $('ctxPill').textContent = wasStudy ? `${n} guided steps` : `${n} answers`;
+                const prevStudy = state.study;
+                state.study = wasStudy;
                 renderResults(reply, provider);
+                state.study = prevStudy;
             } catch (e) {
                 th.remove();
                 errMsg('Could not get a solution. ' + e.message);
@@ -2175,11 +2362,16 @@ y = x^2 - 5x + 6
                 return;
             }
             const answers = c.messages.filter(m => m.role === 'ai').length;
-            $('ctxPill').textContent = answers === 0 ? 'New conversation' : `${answers} answers`;
+            $('ctxPill').textContent = answers === 0 ? 'New conversation' : `${answers} responses`;
+            const keepStudy = state.study;
             c.messages.forEach(m => {
                 if (m.role === 'user') userMsg(m.text || 'Photo of math problem', m.image);
-                else renderResults(m.text, m.provider || 'Math AI');
+                else {
+                    state.study = !!m.study;
+                    renderResults(m.text, m.provider || 'Study');
+                }
             });
+            state.study = keepStudy;
         }
 
         // ======================= INIT =======================
