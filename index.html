@@ -1189,6 +1189,20 @@
             .btn-solid, .btn-outline, .tool-chip, .view-tabs button { min-height: 42px; }
             #helpTip { display: none; }
         }
+        /* ============ Status lines: memory + graph generation ============ */
+        .think-sub { margin-top: 8px; font-size: .7rem; letter-spacing: .04em; color: var(--text-faint); display: flex; align-items: center; gap: 7px; }
+        .think-sub .mem-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-2); animation: memPulse 1.1s ease-in-out infinite; flex: none; }
+        .think-sub.mem::after { content: ''; animation: memDots 1.2s steps(4) infinite; }
+        @keyframes memPulse { 0%, 100% { opacity: .3; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.15); } }
+        @keyframes memDots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+        .think-sub.shimmer { background: linear-gradient(90deg, var(--text-faint) 30%, var(--text) 50%, var(--text-faint) 70%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmerSlide 1.6s linear infinite; }
+        @keyframes shimmerSlide { to { background-position: -200% 0; } }
+        .graph-loading { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 120px; font-size: .74rem; letter-spacing: .04em; color: #666; background: linear-gradient(90deg, #f1f2f6 30%, #e2e5ee 50%, #f1f2f6 70%); background-size: 200% 100%; animation: shimmerSlide 1.4s linear infinite; border-radius: 10px; }
+        .graph-loading .mem-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); animation: memPulse 1s ease-in-out infinite; }
+        .graph-status { font-size: .72rem; color: var(--text-faint); letter-spacing: .03em; padding: 0 18px 10px; min-height: 18px; display: flex; align-items: center; gap: 7px; }
+        .graph-status.live { color: var(--text-dim); }
+        .graph-status.live .mem-dot { width: 7px; height: 7px; border-radius: 50%; background: #16a34a; animation: memPulse 1s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .think-sub, .think-sub::after, .graph-loading, .graph-status .mem-dot { animation: none !important; } }
     </style>
 </head>
 <body>
@@ -1315,6 +1329,7 @@
                     <button onclick="studioExample('y = sin(x), y = cos(x)')">sin + cos</button>
                 </div>
                 <div id="desmosStudioFull"></div>
+                <div class="graph-status" id="graphStatus"></div>
                 <div class="graph-hint">Tip: drag to pan · scroll / pinch to zoom · use the Desmos panel on the left to edit, add sliders and tables.</div>
             </div>
 
@@ -1407,7 +1422,9 @@
         const OPENROUTER_API_KEY = window.__OPENROUTER_API_KEY__ || '';
         const GEMINI_MODELS = ['gemini-3.5-flash-lite', 'gemini-2.5-flash-lite', 'gemini-2.0-flash-lite'];
 
-        const SYSTEM_PROMPT = `You are Math Study, a clear mathematics tutor. Solve the user's problem completely and correctly.
+        const IDENTITY = `You are restlessmonkeyking's Math AI (Math Study). If anyone asks who you are, who made you, or what model you are, say you are restlessmonkeyking's Math AI and nothing else — never claim to be Gemini, ChatGPT, or any other model.`;
+        const SYSTEM_PROMPT = `You are restlessmonkeyking's Math AI (Math Study), a clear mathematics tutor. Solve the user's problem completely and correctly.
+Identity rule: if asked who you are / who made you / what AI you are, answer that you are restlessmonkeyking's Math AI.
 
 STRICT OUTPUT RULES:
 1. Answer EACH sub-question/part SEPARATELY. Separate every part with the exact line: ---PART---
@@ -1435,7 +1452,8 @@ Answer: x = 2 or x = 3
 y = x^2 - 5x + 6
 [/GRAPH]`;
 
-        const STUDY_PROMPT = `You are Math Study in STUDY MODE — a Socratic tutor. NEVER give the final answer directly, even if asked. Guide the student to discover it.
+        const STUDY_PROMPT = `You are restlessmonkeyking's Math AI in STUDY MODE — a Socratic tutor. NEVER give the final answer directly, even if asked. Guide the student to discover it.
+Identity rule: if asked who you are / who made you / what AI you are, answer that you are restlessmonkeyking's Math AI.
 
 STRICT OUTPUT RULES:
 1. Handle ONE small step at a time. Separate steps with the exact line: ---PART---
@@ -1452,7 +1470,8 @@ Try: one concrete question or tiny task for the student to do next (e.g. "Try: w
 
         const MEMORY_INSTRUCTION = `\n6. At the very end of your reply, on its own lines, add a hidden summary block (never shown to the user, used only for follow-up context):\n[MEMORY]\nOne sentence, max 40 words: the topic + key result or current step.\n[/MEMORY]`;
 
-        const MARK_PROMPT = `You are a strict but fair maths teacher marking homework. You get TWO images: IMAGE 1 = student's homework, IMAGE 2 = answer key / worked solutions.
+        const MARK_PROMPT = `You are restlessmonkeyking's Math AI acting as a strict but fair maths teacher marking homework. You get TWO images: IMAGE 1 = student's homework, IMAGE 2 = answer key / worked solutions.
+Identity rule: if asked who you are / who made you, say you are restlessmonkeyking's Math AI.
 
 Compare each visible question in order. For EACH question output a block separated by ---PART--- with:
 Question: Q1 (short restatement)
@@ -1652,13 +1671,21 @@ Rules: x 5-95, y 5-95, ok true=tick green / false=cross red, note max 60 chars. 
             if (inp) inp.value = eq;
             plotStudio(eq);
         }
+        function setGraphStatus(msg, live) {
+            const st = $('graphStatus');
+            if (!st) return;
+            if (!msg) { st.innerHTML = ''; st.classList.remove('live'); return; }
+            st.innerHTML = live ? `<span class="mem-dot"></span><span>${msg}</span>` : `<span>${msg}</span>`;
+            st.classList.toggle('live', !!live);
+        }
         function plotStudio(preset) {
             initStudio();
             const inp = graphInputEl();
             const raw = (preset || (inp ? inp.value : '')).trim();
             if (!raw) { toast('Type a function, e.g. y = x^2', true); return; }
             const eqs = raw.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
-            if (!state.studio) { toast('Graph engine still loading…', true); return; }
+            if (!state.studio) { setGraphStatus('Graph engine still loading…', true); toast('Graph engine still loading…', true); return; }
+            setGraphStatus('Generating graph…', true);
             try {
                 const ids = state.studio.getExpressions().map(e => e.id).filter(id => String(id).startsWith('studio-'));
                 ids.forEach(id => state.studio.removeExpression({ id }));
@@ -1672,10 +1699,13 @@ Rules: x 5-95, y 5-95, ok true=tick green / false=cross red, note max 60 chars. 
             });
             const full = $('desmosStudioFull');
             if (full) { full.classList.remove('plot-flash'); void full.offsetWidth; full.classList.add('plot-flash'); }
+            clearTimeout(plotStudio._t);
+            plotStudio._t = setTimeout(() => setGraphStatus(eqs.length > 1 ? `Plotted ${eqs.length} functions ✓` : `Plotted ${eqs[0]} ✓`, false), 900);
         }
         function clearStudio() {
             const inp = graphInputEl();
             if (inp) inp.value = '';
+            setGraphStatus('', false);
             if (!state.studio) return;
             try { state.studio.getExpressions().forEach(e => { try { state.studio.removeExpression({ id: e.id }); } catch (x) {} }); } catch (e) {}
         }
@@ -1903,7 +1933,9 @@ Rules: x 5-95, y 5-95, ok true=tick green / false=cross red, note max 60 chars. 
         function thinkingMsg() {
             const m = document.createElement('div');
             m.className = 'msg assistant';
-            m.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
+            const showMem = state.memoryOn && state.hiddenMemory;
+            m.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>` +
+                (showMem ? `<div class="think-sub mem shimmer"><span class="mem-dot"></span><span>Loading from memory</span></div>` : '');
             messagesEl.appendChild(m);
             scrollBottom();
             return m;
@@ -1982,7 +2014,7 @@ Rules: x 5-95, y 5-95, ok true=tick green / false=cross red, note max 60 chars. 
                     partHtml += `
                         <div class="graph-box">
                             <div class="graph-label">&#9670; Graph for Part ${i + 1}</div>
-                            <div id="${graphId}" class="desmos-graph"></div>
+                            <div id="${graphId}" class="desmos-graph"><div class="graph-loading"><span class="mem-dot"></span><span>Generating graph</span></div></div>
                         </div>`;
                     setTimeout(() => initGraph(graphId, g), 80);
                 });
@@ -2014,7 +2046,12 @@ Rules: x 5-95, y 5-95, ok true=tick green / false=cross red, note max 60 chars. 
 
         function initGraph(containerId, equations) {
             const el = $(containerId);
-            if (!el || typeof Desmos === 'undefined') return;
+            if (!el) return;
+            if (typeof Desmos === 'undefined') {
+                el.innerHTML = `<div class="graph-loading"><span>Graph engine still loading…</span></div>`;
+                return;
+            }
+            el.innerHTML = '';
             const calc = Desmos.GraphingCalculator(el, {
                 expressions: false,
                 settingsMenu: false,
