@@ -1203,6 +1203,21 @@
         .graph-status.live { color: var(--text-dim); }
         .graph-status.live .mem-dot { width: 7px; height: 7px; border-radius: 50%; background: #16a34a; animation: memPulse 1s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) { .think-sub, .think-sub::after, .graph-loading, .graph-status .mem-dot { animation: none !important; } }
+        /* ============ Answer-first layout: hero answer + steps dropdown ============ */
+        .answer-hero { margin: 14px 16px 4px; padding: 13px 15px; border-radius: 12px; background: rgba(46,230,168,.1); border: 1px solid rgba(46,230,168,.35); font-size: 1rem; line-height: 1.6; }
+        .answer-hero .ans-label { display: block; font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ok); margin-bottom: 5px; }
+        .answer-hero .ans-body { font-weight: 600; }
+        .answer-hero .ans-body p { margin: 0; }
+        details.steps-drop { margin: 10px 16px 14px; border: 1px solid var(--border); border-radius: 11px; background: rgba(0,0,0,.18); overflow: hidden; }
+        details.steps-drop summary { list-style: none; cursor: pointer; padding: 11px 14px; font-size: .8rem; font-weight: 700; color: var(--text-dim); display: flex; align-items: center; gap: 8px; user-select: none; min-height: 42px; }
+        details.steps-drop summary::-webkit-details-marker { display: none; }
+        details.steps-drop summary::before { content: '+'; width: 20px; height: 20px; flex: none; border-radius: 6px; display: grid; place-items: center; background: rgba(255,255,255,.07); font-weight: 800; transition: transform .2s; }
+        details.steps-drop[open] summary::before { content: '–'; }
+        details.steps-drop summary:hover { color: var(--text); }
+        details.steps-drop .part-markdown { padding-top: 0; font-size: 0.78rem; line-height: 1.6; color: var(--text-dim); }
+        details.steps-drop ol, details.steps-drop ul { margin-left: 20px; }
+        .part.single { border: none; background: transparent; }
+        .part.single .part-markdown { padding: 14px 16px; }
     </style>
 </head>
 <body>
@@ -1428,14 +1443,21 @@ Identity rule: if asked who you are / who made you / what AI you are, answer tha
 
 STRICT OUTPUT RULES:
 1. Answer EACH sub-question/part SEPARATELY. Separate every part with the exact line: ---PART---
-2. For each part start with "Question:" restating it, then "Steps:" with the step-by-step working, then a final "Answer:" line.
+2. For each part output ONLY these two labelled sections (never restate the user's question — no "Question:" line):
+Steps:
+1. First move/reason.
+2. Next move/reason.
+3. Continue, one numbered step per line. Keep each step short. Use LaTeX like $x^2$, $\\sqrt{3}$ and $\\frac{a}{b}$ for math.
+Answer: the final result only (one line, no working).
 3. Only emit a [GRAPH] block — one Desmos-compatible equation per line between the exact tags [GRAPH] and [/GRAPH], placed INSIDE that part's block — ONLY when the graph genuinely helps: the user explicitly asks for a graph/sketch, or the answer depends on roots, x-intercepts, intersections of curves, vertex/asymptotes/shape, or coordinate geometry. Do NOT emit a graph for routine algebra (factoring, simplifying, solving by formula, arithmetic, limits, derivatives, ordinary word problems) even if a function is mentioned. Use these forms: y = x^2 (preferred), or r = $\\theta$ style only when polar.
 4. If the problem is a single question with no sub-parts, output a single block (no ---PART--- separators).
-5. Always respond in clear paragraphs. Use LaTeX like $x^2$, $\\sqrt{3}$ and $\\frac{a}{b}$ for math expressions.
+5. Keep the visible reply minimal: steps are listed for the dropdown, answer holds the result.
+6. Formatting lock (critical — the app parses your reply with code): use PLAIN unformatted labels exactly as Steps: and Answer: on their own lines. NEVER bold them, never use headings, never write a Question: line or restate the question in any form.
 
 Example of correct format:
-Question: Factor x^2 - 5x + 6
-Steps: Find two numbers that multiply to 6 and add to -5: -2 and -3.
+Steps:
+1. Find two numbers that multiply to 6 and add to -5: -2 and -3.
+2. Rewrite as (x - 2)(x - 3).
 Answer: (x - 2)(x - 3)
 
 [GRAPH]
@@ -1444,8 +1466,9 @@ y = x^2 - 5x + 6
 
 ---PART---
 
-Question: Solve x^2 - 5x + 6 = 0
-Steps: From the factored form, set each factor to zero.
+Steps:
+1. From the factored form, set each factor to zero.
+2. Solve: x - 2 = 0 gives x = 2; x - 3 = 0 gives x = 3.
 Answer: x = 2 or x = 3
 
 [GRAPH]
@@ -1986,6 +2009,42 @@ Rules: x 5-95, y 5-95, ok true=tick green / false=cross red, note max 60 chars. 
             return blocks.filter(b => b.markdown.length || b.graphs.length);
         }
 
+        function splitAnswerBlock(raw) {
+            // Tolerant split of one ---PART--- block into { steps, answer }.
+            // Drops any "Question:" restatement lines so the user never sees the question echoed.
+            // Tolerates markdown-decorated labels (**Answer:**, ### Steps, etc.) so bolded
+            // labels can never leak through as raw visible text.
+            const ANS_RE = /^\s*(?:#{1,4}\s*)?(?:\*\*|__)?\s*Answer\s*(?:\*\*|__)?\s*:\s*(?:\*\*|__)?\s*([\s\S]*?)\s*$/im;
+            const Q_LINE_RE = /^\s*(?:#{1,4}\s*)?(?:\*\*|__)?\s*Question\s*(?:\*\*|__)?\s*:.*$/i;
+            const STEPS_LABEL_RE = /^\s*(?:#{1,4}\s*)?(?:\*\*|__)?\s*Steps\s*(?:\*\*|__)?\s*:\s*(?:\*\*|__)?\s*/i;
+            let txt = (raw || '').replace(/\r/g, '');
+            let answer = '';
+            const ansM = txt.match(ANS_RE);
+            const hadAnswer = !!ansM;
+            if (ansM) {
+                answer = ansM[1].trim();
+                txt = txt.slice(0, ansM.index).trim();
+            }
+            // Remove "Question:" restatement lines (plain or markdown-decorated)
+            txt = txt.split('\n').filter(l => !Q_LINE_RE.test(l)).join('\n').trim();
+            // Strip a leading lone "Steps:" label (plain or decorated); keep the numbered steps
+            txt = txt.replace(STEPS_LABEL_RE, '').trim();
+            // Clean any leftover label bolding inside the answer itself
+            answer = answer.replace(/^(?:#{1,4}\s*)?(?:\*\*|__)?\s*Answer\s*(?:\*\*|__)?\s*:\s*(?:\*\*|__)?\s*/i, '').trim();
+            return { steps: txt, answer, hadAnswer };
+        }
+
+        function graphBoxHtml(g, label) {
+            const graphId = 'graph-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+            const html = `
+                <div class="graph-box">
+                    <div class="graph-label">&#9670; ${label}</div>
+                    <div id="${graphId}" class="desmos-graph"><div class="graph-loading"><span class="mem-dot"></span><span>Generating graph</span></div></div>
+                </div>`;
+            setTimeout(() => initGraph(graphId, g), 80);
+            return html;
+        }
+
         function renderResults(text, provider) {
             const stripped = stripMemoryBlock(extractMarksBlock(text).clean);
             const blocks = parseResponse(stripped.clean);
@@ -1993,37 +2052,47 @@ Rules: x 5-95, y 5-95, ok true=tick green / false=cross red, note max 60 chars. 
             const isStudy = !!state.study;
 
             blocks.forEach((block, i) => {
-                let md = block.markdown;
-
-                if (!isStudy) {
-                    md = md.replace(/Answer\s*:\s*([\s\S]*)$/i, 'Answer: $1');
-                    // Highlight Answer line
-                    md = md.replace(/^Answer\s*:\s*(.+)$/gm, 'Answer: **$1**');
-                } else {
-                    // Turn "Try:" / "Check:" lines into a visible practice box
+                // ---- Study mode keeps its guided-step layout ----
+                if (isStudy) {
+                    let md = block.markdown;
                     md = md.replace(/^(Try\s*:.*)$/gim, '\n<div class="try-box">$1</div>\n');
                     md = md.replace(/^(Check\s*:.*)$/gim, '\n<div class="try-box">$1</div>\n');
+                    let partHtml = `<div class="part-head"><span class="pnum">${String.fromCharCode(65 + i)}</span>Step ${i + 1}</div>`;
+                    partHtml += `<div class="part-markdown">${marked.parse(md)}</div>`;
+                    block.graphs.forEach(g => { partHtml += graphBoxHtml(g, `Graph for Step ${i + 1}`); });
+                    aiBody.push(`<div class="part study-step" style="animation-delay:${i * 60}ms">${partHtml}</div>`);
+                    return;
                 }
 
-                const headLabel = isStudy ? `Step ${i + 1}` : `Part ${i + 1}`;
-                let partHtml = `<div class="part-head"><span class="pnum">${String.fromCharCode(65 + i)}</span>${headLabel}</div>`;
-                partHtml += `<div class="part-markdown">${marked.parse(md)}</div>`;
+                // ---- Solve mode: answer-first, steps in dropdown, no question echo ----
+                const { steps, answer, hadAnswer } = splitAnswerBlock(block.markdown);
+                const multi = blocks.length > 1;
+                const ansHtml = answer
+                    ? `<div class="answer-hero"><span class="ans-label">Answer</span><div class="ans-body">${marked.parse(answer)}</div></div>`
+                    : '';
+                const stepsHtml = (hadAnswer && steps)
+                    ? `<details class="steps-drop"><summary>Show steps</summary><div class="part-markdown">${marked.parse(steps)}</div></details>`
+                    : '';
+                // Fallback: model ignored the format (no Answer: label at all) — show cleaned text as the answer, no dropdown.
+                // Question lines are still stripped so the question never echoes.
+                const fallbackHtml = (!hadAnswer)
+                    ? `<div class="answer-hero"><span class="ans-label">Answer</span><div class="ans-body">${marked.parse(block.markdown.split('\n').filter(l => !/^\s*(?:#{1,4}\s*)?(?:\*\*|__)?\s*Question\s*(?:\*\*|__)?\s*:.*$/i.test(l)).join('\n').trim() || '—')}</div></div>`
+                    : '';
+                let graphsHtml = '';
+                block.graphs.forEach(g => { graphsHtml += graphBoxHtml(g, multi ? `Graph for Part ${i + 1}` : 'Graph'); });
 
-                block.graphs.forEach((g, gi) => {
-                    const graphId = 'graph-' + Date.now() + '-' + i + '-' + gi;
-                    partHtml += `
-                        <div class="graph-box">
-                            <div class="graph-label">&#9670; Graph for Part ${i + 1}</div>
-                            <div id="${graphId}" class="desmos-graph"><div class="graph-loading"><span class="mem-dot"></span><span>Generating graph</span></div></div>
-                        </div>`;
-                    setTimeout(() => initGraph(graphId, g), 80);
-                });
-
-                aiBody.push(`<div class="part${state.study ? ' study-step' : ''}" style="animation-delay:${i * 60}ms">${partHtml}</div>`);
+                if (!multi) {
+                    // Single question: NO Part container at all
+                    aiBody.push(`<div class="part single" style="animation-delay:0ms">${ansHtml}${stepsHtml}${fallbackHtml}${graphsHtml}</div>`);
+                } else {
+                    let partHtml = `<div class="part-head"><span class="pnum">${String.fromCharCode(65 + i)}</span>Part ${i + 1}</div>`;
+                    partHtml += ansHtml + stepsHtml + fallbackHtml + graphsHtml;
+                    aiBody.push(`<div class="part" style="animation-delay:${i * 60}ms">${partHtml}</div>`);
+                }
             });
 
             const msg = aiMsg(aiBody.join(''), provider);
-            msg.querySelectorAll('.part-markdown').forEach(el => renderMath(el));
+            msg.querySelectorAll('.part-markdown, .ans-body').forEach(el => renderMath(el));
         }
 
         // ======================= KATEX =======================
